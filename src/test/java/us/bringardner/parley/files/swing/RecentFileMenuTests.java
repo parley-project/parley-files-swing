@@ -31,12 +31,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import us.bringardner.parley.files.FileSource;
-import us.bringardner.parley.files.FileSourceFactory;
-import us.bringardner.parley.files.swing.RecentFileMenu.ListEntry;
+import us.bringardner.parley.files.browse.RecentFile;
 import us.bringardner.parley.files.fileproxy.FileProxyFactory;
 import us.bringardner.parley.files.memory.MemoryFileSourceFactory;
 
-/** BJL-20: the recent file list must never save secrets, and must survive a restart. */
+/** BJL-20: the recent file list must never save secrets, and must survive a restart. The entry's own
+ * workings are tested in parley-files (RecentFileTests); these test the Swing menu. */
 public class RecentFileMenuTests {
 
 	private static final String BASE = "us/bringardner/parley/files/test/RecentFileMenuTests";
@@ -117,7 +117,7 @@ public class RecentFileMenuTests {
 
 		RecentFileMenu menu = new RecentFileMenu(node);
 		assertEquals(1, menu.getRecentEntries().size());
-		ListEntry entry = menu.getRecentEntries().get(0);
+		RecentFile entry = menu.getRecentEntries().get(0);
 		assertEquals("/dir|x/a,b.txt", entry.path);
 		assertEquals(USER, entry.prop.getProperty("user"));
 		assertFalse(entry.isLocal);
@@ -141,7 +141,7 @@ public class RecentFileMenuTests {
 		new RecentFileMenu(node).addRecent(secretFile("/a.txt"));
 		RecentFileMenu menu = new RecentFileMenu(node);
 		menu.setSecretPrompter((e, name) -> null);
-		ListEntry entry = menu.getRecentEntries().get(0);
+		RecentFile entry = menu.getRecentEntries().get(0);
 
 		assertNull(menu.openEntry(entry));
 		assertEquals(Arrays.asList("jdbcPassword", "password", "pin"), entry.getMissingSecrets());
@@ -151,7 +151,7 @@ public class RecentFileMenuTests {
 	public void aFailedOpenForgetsTheSecretsEntered() throws IOException {
 		RecentFileMenu menu = new RecentFileMenu(node);
 		menu.setSecretPrompter((e, name) -> "wrong");
-		ListEntry entry = new ListEntry("nosuchfactory|host=h,password|/x");
+		RecentFile entry = new RecentFile("nosuchfactory|host=h,password|/x");
 
 		assertThrows(IOException.class, () -> menu.openEntry(entry));
 		assertEquals(Arrays.asList("password"), entry.getMissingSecrets());
@@ -219,33 +219,9 @@ public class RecentFileMenuTests {
 	}
 
 	@Test
-	public void theNameGuessIsOnlyADefault() {
-		for(String s : new String[] {"password", "PASSWORD", "jdbcPassword", "passwd", "keyPassphrase",
-				"privateKey", "sessionKey", "apiToken", "clientSecret", "credentials"}) {
-			assertTrue(FileSourceFactory.looksLikeSecret(s), s);
-		}
-		for(String s : new String[] {"user", "host", "port", "name", "privateKeyFileName", "", null}) {
-			assertFalse(FileSourceFactory.looksLikeSecret(s), String.valueOf(s));
-		}
-		// a factory that doesn't say uses the guess; one that does is exact
-		assertTrue(new MemoryFileSourceFactory().isSecretProperty("password"));
-		assertTrue(new SecretFactory().isSecretProperty("pin"));
-		assertFalse(new SecretFactory().isSecretProperty("clientSecret"));
-	}
-
-	@Test
-	public void theFactoryDecidesWhatIsSecret() throws IOException {
-		ListEntry entry = new ListEntry(secretFile("/a.txt"));
-		assertTrue(entry.isSecret("pin"));
-		assertTrue(entry.isSecret("passphrase"));
-		assertFalse(entry.isSecret("user"));
-		String saved = entry.toString();
-		assertTrue(saved.startsWith("memory|"), saved);
-		assertTrue(saved.endsWith(",jdbcPassword,password,pin|/a.txt"), saved);
-		assertFalse(saved.contains("passphrase"), saved);
-		assertFalse(saved.contains("4321") || saved.contains("pw2") || saved.contains("s3cret"), saved);
-		// the non-secret value survives a round trip, separators and all
-		assertEquals(USER, new ListEntry(saved).prop.getProperty("user"));
+	public void theMenuSavesWhereRecentFileMigratesTo() {
+		assertEquals(RecentFile.PREF_RECENT_LIST, RecentFileMenu.PREF_RECENT_LIST);
+		assertEquals(RecentFile.PREF_LEGACY_RECENT_LIST, RecentFileMenu.PREF_LEGACY_RECENT_LIST);
 	}
 
 	/** How 1.0.1 and earlier saved the list. */

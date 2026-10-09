@@ -12,7 +12,8 @@ All classes are in the package `us.bringardner.parley.files.swing`:
   `FileSourceFactory.getConnectionSettings()`.
 - `FactoryPropertiesDialog`: choose a file system type and fill in its settings.
 - `RecentFileMenu`: a recent-files menu that can reopen remote files. Secrets are never saved; it
-  asks for them again through a `SecretPrompter`.
+  asks for them again through a `SecretPrompter`. Its entries are parley-files' `RecentFile`s, as
+  in parley-files-fx's `RecentFileMenu`, so the two menus share a list.
 - `FileSourceTransferable`: drag and drop, and copy and paste, of `FileSource`s.
 - `ProgressMonitorProgress`: a Swing `ProgressMonitor` as a `FileSourceProgress`.
 - `BackupDialog`, `FileSourceExamineDialog`.
