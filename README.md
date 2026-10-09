@@ -37,6 +37,25 @@ All classes are in the package `us.bringardner.parley.files.swing`:
 - `ProgressMonitorProgress`: a Swing `ProgressMonitor` as a `FileSourceProgress`.
 - `BackupDialog`, `FileSourceExamineDialog`.
 
+## JavaFX alternatives
+
+What to use from [parley-files-fx](https://github.com/tony-bringardner/parley-files-fx) in a JavaFX
+application instead.
+
+| parley-files-swing | In parley-files-fx |
+|---|---|
+| `FileSourceChooserDialog` | `FileSourceChooser` |
+| `ConnectionSettingsPanel` | `ConnectionSettingsForm` |
+| `FactoryPropertiesDialog` | `ConnectionDialog`, which also connects, in the background |
+| `RecentFileMenu` | `RecentFileMenu`, which shares its list with this one |
+| `ProgressMonitorProgress` | None yet; a `Task` that implements `FileSourceProgress` and calls `updateProgress` does the same |
+| `FileSourceTransferable` | None yet; JavaFX drag and drop uses `Dragboard` and `ClipboardContent` |
+| `FileSourceExamineDialog` (a file's details and text) | None yet |
+| `BackupDialog` | None yet |
+
+parley-files-fx's chooser is also built from parts other views can use (`FileTable`, `PathBar`,
+`FolderTree`). Here those are inside `FileSourceChooserDialog`, not separate classes.
+
 ## Requirements
 
 - Java 11
