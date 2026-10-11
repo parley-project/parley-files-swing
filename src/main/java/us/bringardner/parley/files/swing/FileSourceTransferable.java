@@ -40,6 +40,8 @@ import us.bringardner.parley.files.fileproxy.FileProxy;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import us.bringardner.parley.files.FileSource;
+import us.bringardner.parley.files.FileSourceCopy;
+import us.bringardner.parley.files.FileSourceFactory;
 
 public class FileSourceTransferable implements Transferable {
 
@@ -94,9 +96,9 @@ public class FileSourceTransferable implements Transferable {
 					Path dir = Files.createTempDirectory("fs-export");
 					dir.toFile().deleteOnExit();
 					exportFile = dir.resolve(file.getName()).toFile();
-					try (InputStream in = file.getInputStream()) {
-						Files.copy(in, exportFile.toPath());
-					}
+					// in blocks that suit both ends: this was Files.copy on a stream with no size, which
+					// reads a remote file in the JDK's 8 to 16 KB
+					FileSourceCopy.copy(file, FileSourceFactory.getDefaultFactory().createFileSource(exportFile.getAbsolutePath()));
 					// registered after the directory, so it is deleted first
 					exportFile.deleteOnExit();
 				}
