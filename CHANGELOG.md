@@ -20,3 +20,9 @@ so parley-files needs no UI toolkit.
   and `RecentFileMenu.SecretPrompter` is `RecentFile.SecretPrompter` (its first argument is a
   `RecentFile`). Everything about an entry that isn't Swing moved there, so parley-files-fx's
   `RecentFileMenu` works the same way and the two menus share a list.
+
+### Changed (no code change needed)
+
+- Dragging a file out of a file system that isn't the local one copies it with parley-files'
+  `FileSourceCopy`, which sizes the blocks for both ends and opens both streams with that size. It was
+  `Files.copy` on a stream with no size, which reads a remote file in the JDK's 8 to 16 KB.
