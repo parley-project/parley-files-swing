@@ -56,6 +56,18 @@ application instead.
 parley-files-fx's chooser is also built from parts other views can use (`FileTable`, `PathBar`,
 `FolderTree`). Here those are inside `FileSourceChooserDialog`, not separate classes.
 
+## Changing the look
+
+The library never forces Parley's look on your application. File and folder icons come from the
+current look and feel, and the one image of its own, the main menu ("hamburger") icon in
+`FileSourceChooserDialog`, is looked up in the `UIManager` first:
+
+```java
+UIManager.put(FileSourceChooserDialog.MENU_ICON_KEY, myIcon);   // "ParleyFiles.menuIcon"
+```
+
+Set it before the dialog is created. Without it, the dialog uses its built-in icon.
+
 ## Requirements
 
 - Java 11

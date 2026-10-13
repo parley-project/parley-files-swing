@@ -89,6 +89,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIDefaults;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -105,6 +106,25 @@ import us.bringardner.parley.files.browse.FileCopy;
 public class FileSourceChooserDialog extends JDialog implements DragGestureListener, ClipboardOwner {
 
 	private static final long serialVersionUID = 1L;
+
+	/**
+	 * The {@link UIManager} key for the icon on the dialog's main menu (the "hamburger" button).
+	 * Put your own {@link Icon} under this key, before the dialog is created, to replace the default:
+	 * <pre>UIManager.put(FileSourceChooserDialog.MENU_ICON_KEY, myIcon);</pre>
+	 */
+	public static final String MENU_ICON_KEY = "ParleyFiles.menuIcon";
+
+	/** The default main menu icon, in this class's package. */
+	static final String DEFAULT_MENU_ICON = "HamburgerMenu_20_black.png";
+
+	/**
+	 * The icon for the main menu: the one under {@link #MENU_ICON_KEY} in the {@link UIManager}, or
+	 * the default if there is none.
+	 */
+	static Icon menuIcon() {
+		Icon icon = UIManager.getIcon(MENU_ICON_KEY);
+		return icon != null ? icon : new ImageIcon(FileSourceChooserDialog.class.getResource(DEFAULT_MENU_ICON));
+	}
 	//data:image/jpeg;base64,
 	private Icon fileIcon;
 	private Icon folderIcon;	
@@ -834,7 +854,7 @@ public class FileSourceChooserDialog extends JDialog implements DragGestureListe
 		northPanel.add(menuBar, BorderLayout.WEST);
 
 		mainMenu = new JMenu("");
-		mainMenu.setIcon(new ImageIcon(FileSourceChooserDialog.class.getResource("/HamburgerMenu_20_black.png")));
+		mainMenu.setIcon(menuIcon());
 		menuBar.add(mainMenu);
 
 		JCheckBoxMenuItem chckbxmntmNewCheckItem = new JCheckBoxMenuItem("Show Hidden Files",showHiddenFiles);

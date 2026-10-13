@@ -5,6 +5,12 @@
 First release. These classes were in parley-files (and before that BjlFileSystem); they moved here
 so parley-files needs no UI toolkit.
 
+### Added
+
+- `FileSourceChooserDialog.MENU_ICON_KEY` ("ParleyFiles.menuIcon"): put an `Icon` under this key in
+  the `UIManager` to replace the dialog's main menu icon, so an application can use its own look.
+- GraalVM native-image metadata in the jar, listing the menu icon, so native builds include it.
+
 ### Changed (needs a code change)
 
 - Package: `us.bringardner.parley.files` is now `us.bringardner.parley.files.swing` for
@@ -23,6 +29,9 @@ so parley-files needs no UI toolkit.
 
 ### Changed (no code change needed)
 
+- The main menu icon moved from the root of the classpath (`/HamburgerMenu_20_black.png`) into the
+  package, `us/bringardner/parley/files/swing/`, so it can't clash with a file of the same name in
+  another jar.
 - Dragging a file out of a file system that isn't the local one copies it with parley-files'
   `FileSourceCopy`, which sizes the blocks for both ends and opens both streams with that size. It was
   `Files.copy` on a stream with no size, which reads a remote file in the JDK's 8 to 16 KB.
