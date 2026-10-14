@@ -34,6 +34,7 @@ import java.awt.Insets;
 import java.awt.Window;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,8 +46,11 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -58,6 +62,10 @@ import us.bringardner.parley.files.ConnectionSetting;
 import us.bringardner.parley.files.ConnectionSettings;
 import us.bringardner.parley.files.FileSourceFactory;
 import us.bringardner.parley.files.IConnectionPropertiesEditor;
+import us.bringardner.parley.files.credentials.CredentialException;
+import us.bringardner.parley.files.credentials.CredentialProvider;
+import us.bringardner.parley.files.credentials.CredentialRef;
+import us.bringardner.parley.files.credentials.Credentials;
 
 /**
  * A Swing form for any factory's {@link ConnectionSetting}s: a field of the right kind for
@@ -73,6 +81,8 @@ public class ConnectionSettingsPanel extends JPanel implements IConnectionProper
 		final JLabel label;
 		final JComponent field;
 		final JComponent editor;
+		/** For a secret: store a typed password in the keychain on OK; null when there's no keychain. */
+		JCheckBox saveToKeychain;
 
 		Row(ConnectionSetting setting, JLabel label, JComponent field, JComponent editor) {
 			this.setting = setting;
@@ -105,6 +115,8 @@ public class ConnectionSettingsPanel extends JPanel implements IConnectionProper
 	private final JPanel form = new JPanel(new GridBagLayout());
 	private final JCheckBox showAdvanced = new JCheckBox("Show advanced settings");
 	private final JLabel none = new JLabel("There are no connection settings for this file system.");
+	/** The factory's type id, for the keychain entry a typed password is saved as; null if unknown. */
+	private String factoryId;
 
 	public ConnectionSettingsPanel() {
 		setLayout(new BorderLayout());
@@ -164,9 +176,40 @@ public class ConnectionSettingsPanel extends JPanel implements IConnectionProper
 		JComponent field;
 		switch (s.kind()) {
 		case SECRET: {
+			// a reference (@keychain:...) isn't a secret: it's shown in clear, a password masked
 			JPasswordField pw = new JPasswordField(value, 20);
-			editor = field = pw;
-			break;
+			char mask = pw.getEchoChar();
+			JButton fromStore = new JButton("From store...");
+			fromStore.setToolTipText("Use a secret kept in a credential store, such as @keychain:parley/prod-db");
+			fromStore.addActionListener(e->chooseReference(pw, fromStore));
+			JPanel p = new JPanel(new BorderLayout(4, 0));
+			p.add(pw, BorderLayout.CENTER);
+			p.add(fromStore, BorderLayout.EAST);
+			JCheckBox save = keychainCanStore() ? new JCheckBox("Save to keychain") : null;
+			if( save != null ) {
+				save.setToolTipText("Keep the password in the keychain, and only a reference to it here");
+				p.add(save, BorderLayout.SOUTH);
+			}
+			Runnable show = ()->{
+				boolean ref = CredentialRef.isReference(new String(pw.getPassword()));
+				pw.setEchoChar(ref ? (char) 0 : mask);
+				if( save != null ) {
+					save.setEnabled(!ref && pw.getPassword().length > 0);
+				}
+			};
+			show.run();
+			pw.getDocument().addDocumentListener(new DocumentListener() {
+				@Override public void insertUpdate(DocumentEvent e) { show.run(); }
+				@Override public void removeUpdate(DocumentEvent e) { show.run(); }
+				@Override public void changedUpdate(DocumentEvent e) { }
+			});
+			Row row = new Row(s, label, p, pw);
+			row.saveToKeychain = save;
+			if( !s.description().isEmpty()) {
+				label.setToolTipText(s.description());
+				pw.setToolTipText(s.description());
+			}
+			return row;
 		}
 		case MULTILINE_SECRET: {
 			JTextArea area = new JTextArea(value, 6, 40);
@@ -222,6 +265,100 @@ public class ConnectionSettingsPanel extends JPanel implements IConnectionProper
 		return new Row(s, label, field, editor);
 	}
 
+	/** True if a keychain provider is installed, works here and can store secrets. */
+	private static boolean keychainCanStore() {
+		return Credentials.get("keychain").filter(p->p.isAvailable() && p.canStore()).isPresent();
+	}
+
+	/**
+	 * A menu of the references the credential stores can list, and an item to type one; the
+	 * one chosen goes into field.
+	 */
+	private void chooseReference(JPasswordField field, Component under) {
+		JPopupMenu menu = new JPopupMenu();
+		for(String ref : storedReferences()) {
+			JMenuItem item = new JMenuItem(ref);
+			item.addActionListener(e->field.setText(ref));
+			menu.add(item);
+		}
+		if( menu.getComponentCount() == 0 ) {
+			JMenuItem nothing = new JMenuItem("No stored secrets to list");
+			nothing.setEnabled(false);
+			menu.add(nothing);
+		}
+		menu.addSeparator();
+		JMenuItem type = new JMenuItem("Type a reference...");
+		type.addActionListener(e->{
+			Object answer = JOptionPane.showInputDialog(this,
+					"A reference to a stored secret, such as @keychain:parley/prod-db or @env:DB_PASSWORD",
+					"Use a stored secret", JOptionPane.PLAIN_MESSAGE, null, null, "@keychain:parley/");
+			if( answer != null ) {
+				String v = answer.toString().trim();
+				if( CredentialRef.isReference(v)) {
+					field.setText(v);
+				} else {
+					JOptionPane.showMessageDialog(this, "'"+v+"' isn't a reference: use @scheme:locator",
+							"Use a stored secret", JOptionPane.WARNING_MESSAGE);
+				}
+			}
+		});
+		menu.add(type);
+		menu.show(under, 0, under.getHeight());
+	}
+
+	/**
+	 * The references the available credential stores can list (a keychain can't be listed; a
+	 * locked keystore is left out rather than asking for its master password here).
+	 */
+	static List<String> storedReferences() {
+		List<String> ret = new ArrayList<>();
+		for(CredentialProvider p : Credentials.providers()) {
+			if( !p.isAvailable() || !p.canStore()) {
+				continue;
+			}
+			try {
+				for(CredentialRef r : p.list()) {
+					ret.add(r.toString());
+				}
+			} catch (CredentialException e) {
+				// can't be listed now
+			}
+		}
+		return ret;
+	}
+
+	/**
+	 * Saves typed passwords whose "Save to keychain" box is ticked, and puts a reference to
+	 * each in its field instead. A failure is shown and the password is left as typed.
+	 */
+	private void saveTypedSecretsToKeychain(Properties values) {
+		for(Row r : rows.values()) {
+			JCheckBox save = r.saveToKeychain;
+			if( save == null || !save.isSelected() || !(r.editor instanceof JPasswordField)) {
+				continue;
+			}
+			JPasswordField pw = (JPasswordField) r.editor;
+			char[] secret = pw.getPassword();
+			try {
+				if( secret.length == 0 || CredentialRef.isReference(new String(secret))) {
+					continue;
+				}
+				CredentialRef ref = ConnectionSettings.suggestedKeychainRef(factoryId,
+						values.getProperty("user"), values.getProperty("host"));
+				Credentials.store(ref, secret);
+				pw.setText(ref.toString());
+				save.setSelected(false);
+			} catch (CredentialException e) {
+				if( !java.awt.GraphicsEnvironment.isHeadless()) {
+					JOptionPane.showMessageDialog(this, "The password wasn't saved to the keychain:\n"+e.getMessage(),
+							r.setting.label(), JOptionPane.WARNING_MESSAGE);
+				}
+			} finally {
+				Arrays.fill(secret, '\0');
+			}
+		}
+	}
+
 	private void browse(JTextField text) {
 		JFileChooser fc = new JFileChooser();
 		if( !text.getText().isBlank()) {
@@ -271,6 +408,7 @@ public class ConnectionSettingsPanel extends JPanel implements IConnectionProper
 	/** The properties to connect with (settings that don't apply are emptied). */
 	@Override
 	public Properties getProperties() {
+		saveTypedSecretsToKeychain(currentValues());
 		return ConnectionSettings.forConnect(settings, currentValues());
 	}
 
@@ -286,6 +424,7 @@ public class ConnectionSettingsPanel extends JPanel implements IConnectionProper
 
 	/** Fills the form with factory's settings and current values. */
 	public void setFactory(FileSourceFactory factory) {
+		factoryId = factory.getTypeId();
 		setSettings(factory.getConnectionSettings(), factory.getConnectProperties());
 	}
 
@@ -299,5 +438,16 @@ public class ConnectionSettingsPanel extends JPanel implements IConnectionProper
 	Component fieldFor(String key) {
 		Row r = rows.get(key);
 		return r == null ? null : r.editor;
+	}
+
+	/** The "Save to keychain" box for a secret setting, for tests; null if there's none. */
+	JCheckBox saveToKeychainFor(String key) {
+		Row r = rows.get(key);
+		return r == null ? null : r.saveToKeychain;
+	}
+
+	/** Sets the factory type id used to name keychain entries, for tests. */
+	void setFactoryId(String id) {
+		factoryId = id;
 	}
 }

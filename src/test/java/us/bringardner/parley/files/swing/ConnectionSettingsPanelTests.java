@@ -67,7 +67,7 @@ public class ConnectionSettingsPanelTests {
 			Properties values = new Properties();
 			values.setProperty("password", "pw");
 			panel.setSettings(SETTINGS, values);
-			Component password = panel.fieldFor("password");
+			Component password = panel.fieldFor("password").getParent();   // the field and its "From store..." button
 			Component keyFile = ((JTextField) panel.fieldFor("identityFile")).getParent();
 			assertTrue(password.isVisible());
 			assertFalse(keyFile.isVisible());
@@ -110,6 +110,102 @@ public class ConnectionSettingsPanelTests {
 			panel.setProperties(values);
 			assertTrue(panel.fieldFor("password") instanceof JPasswordField);
 			assertEquals("jdbc:x", panel.getProperties().getProperty("url"));
+		});
+	}
+
+	/** A keychain in memory that can list what it holds. */
+	static class FakeKeychain implements us.bringardner.parley.files.credentials.CredentialProvider {
+		final java.util.Map<String, String> entries = new java.util.TreeMap<>();
+		@Override public String scheme() { return "keychain"; }
+		@Override public boolean isAvailable() { return true; }
+		@Override public boolean canStore() { return true; }
+		@Override public char[] resolve(us.bringardner.parley.files.credentials.CredentialRef ref,
+				us.bringardner.parley.files.credentials.CredentialRequest req) {
+			return entries.get(ref.locator()).toCharArray();
+		}
+		@Override public void store(us.bringardner.parley.files.credentials.CredentialRef ref, char[] secret) {
+			entries.put(ref.locator(), new String(secret));
+		}
+		@Override public List<us.bringardner.parley.files.credentials.CredentialRef> list() {
+			List<us.bringardner.parley.files.credentials.CredentialRef> ret = new java.util.ArrayList<>();
+			for(String k : entries.keySet()) {
+				ret.add(new us.bringardner.parley.files.credentials.CredentialRef("keychain", k));
+			}
+			return ret;
+		}
+	}
+
+	private static Properties sftpValues(String password) {
+		Properties v = new Properties();
+		v.setProperty("host", "prod");
+		v.setProperty("user", "deploy");
+		v.setProperty("auth", "password");
+		v.setProperty("password", password);
+		return v;
+	}
+
+	private static final List<ConnectionSetting> WITH_USER = List.of(
+			ConnectionSetting.text("host", "Host"), ConnectionSetting.text("user", "User"),
+			ConnectionSetting.choice("auth", "Authentication", "password", "keyFile"),
+			ConnectionSetting.secret("password", "Password").visibleWhen("auth", "password"));
+
+	@Test
+	public void aReferenceIsShownInClearAndAPasswordMasked() throws Exception {
+		onEdt(()->{
+			ConnectionSettingsPanel panel = new ConnectionSettingsPanel();
+			panel.setSettings(WITH_USER, sftpValues("@env:DB_PW"));
+			JPasswordField pw = (JPasswordField) panel.fieldFor("password");
+			assertEquals(0, pw.getEchoChar(), "a reference isn't a secret");
+			pw.setText("hunter2");
+			assertTrue(pw.getEchoChar() != 0, "a password is masked");
+			assertEquals("hunter2", panel.getProperties().getProperty("password"));
+		});
+	}
+
+	@Test
+	public void aTypedPasswordCanBeSavedToTheKeychain() throws Exception {
+		FakeKeychain keychain = new FakeKeychain();
+		us.bringardner.parley.files.credentials.Credentials.register(keychain);
+		try {
+			onEdt(()->{
+				ConnectionSettingsPanel panel = new ConnectionSettingsPanel();
+				panel.setFactoryId("sftp");
+				panel.setSettings(WITH_USER, sftpValues("hunter2"));
+				javax.swing.JCheckBox save = panel.saveToKeychainFor("password");
+				assertTrue(save != null && save.isEnabled());
+				save.setSelected(true);
+				Properties p = panel.getProperties();
+				assertEquals("@keychain:parley/sftp/deploy@prod", p.getProperty("password"));
+				assertEquals("hunter2", keychain.entries.get("parley/sftp/deploy@prod"));
+				assertFalse(save.isSelected());
+				assertFalse(save.isEnabled(), "nothing to save once the field holds a reference");
+				assertEquals(List.of("@keychain:parley/sftp/deploy@prod"), ConnectionSettingsPanel.storedReferences());
+			});
+		} finally {
+			us.bringardner.parley.files.credentials.Credentials.restoreDefaults();
+		}
+	}
+
+	@Test
+	public void withNoKeychainThereIsNoSaveBox() throws Exception {
+		us.bringardner.parley.files.credentials.Credentials.unregister("keychain");
+		try {
+			onEdt(()->{
+				ConnectionSettingsPanel panel = new ConnectionSettingsPanel();
+				panel.setSettings(WITH_USER, sftpValues("x"));
+				assertEquals(null, panel.saveToKeychainFor("password"));
+			});
+		} finally {
+			us.bringardner.parley.files.credentials.Credentials.restoreDefaults();
+		}
+	}
+
+	@Test
+	public void anUnknownStoreIsReported() throws Exception {
+		onEdt(()->{
+			ConnectionSettingsPanel panel = new ConnectionSettingsPanel();
+			panel.setSettings(WITH_USER, sftpValues("@vault:prod"));
+			assertEquals(List.of("Password: there is no credential store called 'vault' (@vault:prod)"), panel.validateValues());
 		});
 	}
 }
