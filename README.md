@@ -1,12 +1,12 @@
 # parley-files-swing
 
-Swing user interface for [parley-files](https://github.com/tony-bringardner/parley-files). It was
+Swing user interface for [parley-files](https://github.com/parley-project/parley-files). It was
 part of parley-files until 1.0.0; it moved here so parley-files needs no UI toolkit. The JavaFX
-counterpart is [parley-files-fx](https://github.com/tony-bringardner/parley-files-fx).
+counterpart is [parley-files-fx](https://github.com/parley-project/parley-files-fx).
 
 ## Why this library exists
 
-[parley-files](https://github.com/tony-bringardner/parley-files) reads and writes files on any file
+[parley-files](https://github.com/parley-project/parley-files) reads and writes files on any file
 system: local, SFTP, FTP, a database. Servers, command-line tools and shells use it with no screen
 at all, so it must not need a UI toolkit. But a desktop application also needs to show those file
 systems: open and save dialogs that reach remote servers (`JFileChooser` only knows local files), a
@@ -15,7 +15,7 @@ Swing.
 
 The logic every UI needs (which connection settings apply, listing and sorting, copying, what a
 recent files entry saves) stays in parley-files, without a UI. This library and
-[parley-files-fx](https://github.com/tony-bringardner/parley-files-fx) only show it, so the Swing
+[parley-files-fx](https://github.com/parley-project/parley-files-fx) only show it, so the Swing
 and JavaFX UIs behave the same and share one recent files list.
 
 **Use parley-files-swing** when your application's UI is Swing. That includes when it has to run on
@@ -39,7 +39,7 @@ All classes are in the package `us.bringardner.parley.files.swing`:
 
 ## JavaFX alternatives
 
-What to use from [parley-files-fx](https://github.com/tony-bringardner/parley-files-fx) in a JavaFX
+What to use from [parley-files-fx](https://github.com/parley-project/parley-files-fx) in a JavaFX
 application instead.
 
 | parley-files-swing | In parley-files-fx |
@@ -71,7 +71,7 @@ Set it before the dialog is created. Without it, the dialog uses its built-in ic
 ## Requirements
 
 - Java 11
-- parley-files and [swing-widgets](https://github.com/tony-bringardner/swing-widgets)
+- parley-files and [swing-widgets](https://github.com/parley-project/swing-widgets)
 
 ## Building
 
