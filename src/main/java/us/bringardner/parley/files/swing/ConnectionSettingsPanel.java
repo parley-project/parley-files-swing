@@ -320,8 +320,8 @@ public class ConnectionSettingsPanel extends JPanel implements IConnectionProper
 				for(CredentialRef r : p.list()) {
 					ret.add(r.toString());
 				}
-			} catch (CredentialException e) {
-				// can't be listed now
+			} catch (CredentialException | RuntimeException e) {
+				// can't be listed now (a faulty store mustn't break the menu)
 			}
 		}
 		return ret;
