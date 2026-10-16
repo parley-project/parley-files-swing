@@ -108,7 +108,7 @@ public class RecentFileMenuTests {
 		assertFalse(saved.contains("password="), saved);
 		assertFalse(saved.contains("passphrase"), saved);
 		// kept in memory for this session
-		assertEquals(PASSWORD, menu.getRecentEntries().get(0).prop.getProperty("password"));
+		assertEquals(PASSWORD, menu.getRecentEntries().get(0).getProperties().getProperty("password"));
 	}
 
 	@Test
@@ -118,9 +118,9 @@ public class RecentFileMenuTests {
 		RecentFileMenu menu = new RecentFileMenu(node);
 		assertEquals(1, menu.getRecentEntries().size());
 		RecentFile entry = menu.getRecentEntries().get(0);
-		assertEquals("/dir|x/a,b.txt", entry.path);
-		assertEquals(USER, entry.prop.getProperty("user"));
-		assertFalse(entry.isLocal);
+		assertEquals("/dir|x/a,b.txt", entry.getPath());
+		assertEquals(USER, entry.getProperties().getProperty("user"));
+		assertFalse(entry.isLocal());
 		assertEquals(Arrays.asList("jdbcPassword", "password", "pin"), entry.getMissingSecrets());
 
 		List<String> asked = new ArrayList<>();
@@ -169,8 +169,8 @@ public class RecentFileMenuTests {
 		RecentFileMenu again = new RecentFileMenu(node);
 		assertEquals(2, again.getMaxFiles());
 		assertEquals(2, again.getRecentEntries().size());
-		assertEquals("/2.txt", again.getRecentEntries().get(0).path);
-		assertEquals("/3.txt", again.getRecentEntries().get(1).path);
+		assertEquals("/2.txt", again.getRecentEntries().get(0).getPath());
+		assertEquals("/3.txt", again.getRecentEntries().get(1).getPath());
 	}
 
 	@Test
@@ -185,7 +185,7 @@ public class RecentFileMenuTests {
 
 			RecentFileMenu again = new RecentFileMenu(node);
 			assertEquals(1, again.getRecentEntries().size());
-			assertEquals("/remote.txt", again.getRecentEntries().get(0).path);
+			assertEquals("/remote.txt", again.getRecentEntries().get(0).getPath());
 		} finally {
 			tmp.delete();
 		}
@@ -199,7 +199,7 @@ public class RecentFileMenuTests {
 
 		RecentFileMenu menu = new RecentFileMenu(node);
 		assertEquals(1, menu.getRecentEntries().size());
-		assertEquals("/docs/a.txt", menu.getRecentEntries().get(0).path);
+		assertEquals("/docs/a.txt", menu.getRecentEntries().get(0).getPath());
 		assertNull(node.get(RecentFileMenu.PREF_LEGACY_RECENT_LIST, null));
 		String saved = node.get(RecentFileMenu.PREF_RECENT_LIST, "");
 		assertTrue(saved.contains("user=bob"), saved);
