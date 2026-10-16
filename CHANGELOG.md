@@ -1,6 +1,6 @@
 # Changelog
 
-## parley-files-swing 1.0.0 (unreleased)
+## parley-files-swing 1.0.0 (2026-10-16)
 
 First release. These classes were in parley-files (and before that BjlFileSystem); they moved here
 so parley-files needs no UI toolkit.
