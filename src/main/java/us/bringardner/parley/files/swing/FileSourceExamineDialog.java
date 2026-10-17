@@ -25,6 +25,7 @@
  */
 package us.bringardner.parley.files.swing;
 
+import us.bringardner.swing.gradient.GradientLook;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -446,6 +447,9 @@ public class FileSourceExamineDialog extends JDialog {
 				}
 			}
 		}
+
+		// the application's gradient look, if it uses swing-widgets' GradientLook
+		GradientLook.follow(this);
 	}
 
 	protected void actionSomthingShanged() {

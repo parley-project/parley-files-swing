@@ -1,5 +1,14 @@
 # Changelog
 
+## parley-files-swing 1.1.0 (unreleased)
+
+### Changed
+
+- The dialogs (`FileSourceChooserDialog`, `FileSourceExamineDialog`, `BackupDialog`,
+  `FactoryPropertiesDialog`) take on the application's gradient look when it uses swing-widgets'
+  `GradientLook`, as parley-files-viewer and fsh-ide do; otherwise they look as before.
+  swing-widgets 1.1.0.
+
 ## parley-files-swing 1.0.0 (2026-10-16)
 
 First release. These classes were in parley-files (and before that BjlFileSystem); they moved here

@@ -25,6 +25,7 @@
  */
 package us.bringardner.parley.files.swing;
 
+import us.bringardner.swing.gradient.GradientLook;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.io.File;
@@ -96,6 +97,9 @@ public class BackupDialog extends JDialog {
 				buttonPane.add(cancelButton);
 			}
 		}
+
+		// the application's gradient look, if it uses swing-widgets' GradientLook
+		GradientLook.follow(this);
 	}
 
 }

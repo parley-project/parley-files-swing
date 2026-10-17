@@ -31,6 +31,7 @@
 
 package us.bringardner.parley.files.swing;
 
+import us.bringardner.swing.gradient.GradientLook;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.event.WindowAdapter;
@@ -72,6 +73,9 @@ public class FactoryPropertiesDialog extends javax.swing.JDialog {
 		super();
 		setModal(true);
 		initComponents();
+
+		// the application's gradient look, if it uses swing-widgets' GradientLook
+		GradientLook.follow(this);
 	}
 
 

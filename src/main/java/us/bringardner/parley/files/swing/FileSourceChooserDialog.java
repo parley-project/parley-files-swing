@@ -25,6 +25,7 @@
  */
 package us.bringardner.parley.files.swing;
 
+import us.bringardner.swing.gradient.GradientLook;
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -1098,8 +1099,8 @@ public class FileSourceChooserDialog extends JDialog implements DragGestureListe
 
 		getRootPane().setDefaultButton(okButton);
 
-
-
+		// the application's gradient look, if it uses swing-widgets' GradientLook
+		GradientLook.follow(this);
 	}
 
 
