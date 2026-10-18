@@ -83,7 +83,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
@@ -95,7 +94,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.tree.DefaultTreeCellRenderer;
 import java.util.Objects;
 import us.bringardner.parley.files.FileSource;
 import us.bringardner.parley.files.FileSourceFactory;
@@ -125,8 +123,16 @@ public class FileSourceChooserDialog extends JDialog implements DragGestureListe
 		return icon != null ? icon : new ImageIcon(FileSourceChooserDialog.class.getResource(DEFAULT_MENU_ICON));
 	}
 	//data:image/jpeg;base64,
-	private Icon fileIcon;
-	private Icon folderIcon;	
+	/**
+	 * Folders and files in the theme's colors (swing-widgets' FolderIcon and FileIcon), as in the
+	 * viewers. A tree's own icons are the gradient look's one marker for every node, so folders and
+	 * files looked the same.
+	 */
+	static final Icon FOLDER_ICON = new us.bringardner.swing.gradient.FolderIcon(16,
+			us.bringardner.swing.gradient.FolderIcon.Kind.CLOSED);
+	static final Icon FILE_ICON = new us.bringardner.swing.gradient.FileIcon(16);
+	private final Icon fileIcon = FILE_ICON;
+	private final Icon folderIcon = FOLDER_ICON;
 
 
 	// ************************
@@ -911,11 +917,6 @@ public class FileSourceChooserDialog extends JDialog implements DragGestureListe
 
 		//-----------------------
 
-		JTree tmptree = new JTree();
-
-		DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer) tmptree.getCellRenderer();
-		folderIcon = renderer.getClosedIcon();
-		fileIcon = renderer.getDefaultLeafIcon();
 
 
 		JPanel panel3 = new JPanel();
