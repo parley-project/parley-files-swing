@@ -34,8 +34,6 @@ package us.bringardner.parley.files.swing;
 import us.bringardner.swing.gradient.GradientLook;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -210,6 +208,7 @@ public class FactoryPropertiesDialog extends javax.swing.JDialog {
 		if( !testing && checkValues()) {
 			testConnect(settingsPanel.getProperties(), ()->{
 				accepted = true;
+				cancel = false;
 				dispose();
 			}, ()->JOptionPane.showMessageDialog(this, "Could not connect to "+factory.getTitle(),"", JOptionPane.ERROR_MESSAGE));
 		}
@@ -241,16 +240,9 @@ public class FactoryPropertiesDialog extends javax.swing.JDialog {
 		}
 		setFactory(factory);
 
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent arg0) {
-				if( ! accepted ) {
-					//  if the users closes the window without pressing ok or cancel we cancel the operation
-					cancel = true;
-				}
-			}
-			
-		});
+		// only OK accepts: Cancel, the close button or anything else that closes it cancels
+		accepted = false;
+		cancel = true;
 		setVisible(true);
 		if(!cancel) {
 			this.factory.setConnectionProperties(settingsPanel.getProperties());

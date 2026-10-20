@@ -453,6 +453,9 @@ public class FileSourceExamineDialog extends JDialog {
 	}
 
 	protected void actionSomthingShanged() {
+		if( file == null || lastModifiedDateSpinnerModel == null ) {
+			return; // still being built (a field's listener fires as it's filled in): nothing to compare yet
+		}
 		boolean changed=false;
 		try {
 			long lastMod = lastModifiedDateSpinnerModel.getDate().getTime();
@@ -485,8 +488,14 @@ public class FileSourceExamineDialog extends JDialog {
 
 	protected void actionSave() {
 		// Not implemented
+		cancel = false;
 		dispose();
 
+	}
+
+	/** True unless the last showing ended with Save. */
+	public boolean isCanceled() {
+		return cancel;
 	}
 
 	protected void actionCancel() {
@@ -612,6 +621,8 @@ public class FileSourceExamineDialog extends JDialog {
 
 	public void showDialog(FileSource file) throws IOException {
 		this.file = file;
+		// only Save accepts: Cancel, the close button or anything else that closes it cancels
+		cancel = true;
 		setModal(true);
 
 		ownerReadableCheckBox.setSelected(file.canOwnerRead());
