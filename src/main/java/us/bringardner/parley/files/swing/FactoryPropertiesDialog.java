@@ -190,7 +190,7 @@ public class FactoryPropertiesDialog extends javax.swing.JDialog {
 			SwingUtilities.invokeLater(()->{
 				setCursor(current);
 				testing = false;
-				if( r != null && !isCancel()) {
+				if( r != null && isDisplayable()) {	// not isCancel(): that stays true for as long as the dialog is up
 					r.run();
 				}
 			});
