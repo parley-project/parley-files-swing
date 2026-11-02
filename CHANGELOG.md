@@ -1,5 +1,17 @@
 # Changelog
 
+## parley-files-swing 2.0.0 (unreleased)
+
+### Changed (2026-11-02: preference keys and credentials, To-Do 2.19)
+
+- **FileSourceChooserDialog keeps its preferences where parley-files-fx's FileSourceChooser does**
+  (`PREFERENCES_NODE`, `/us/bringardner/parley/files/chooser`, `preferences()`), so both choosers show the same, with
+  one spelling for each key: `ShowExtensions` (was `ShowExtentions`) and `ShowHidden` (was `ShowHiddenFiles`), saved as
+  booleans. Choices saved by 1.x (in `/us/bringardner/parley/files/swing`) aren't carried over.
+- **A password saved to the keychain from ConnectionSettingsPanel is stored where its factory's secrets are read**
+  (parley-files' `Credentials.store` with the factory's `CredentialRequest`, so `parley.credentials.<id>.keyStore`
+  decides), and the references menu lists that store's entries.
+
 ## parley-files-swing 1.1.0 (unreleased)
 
 ### Changed

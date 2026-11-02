@@ -286,8 +286,21 @@ public class FileSourceChooserDialog extends JDialog implements DragGestureListe
 	 * the user can choose from.
 	 */
 	public static final String CHOOSABLE_FILE_FILTER_CHANGED_PROPERTY = "ChoosableFileFilterChangedProperty";
-	private static final String SHOW_EXTENTIONS_PREFERENCE = "ShowExtentions";
-	private static final String SHOW_HIDDEN_FILES_PREFERENCE = "ShowHiddenFiles";
+	/**
+	 * Where the choosers remember whether hidden files and extensions are shown: one node for this
+	 * chooser and parley-files-fx's FileSourceChooser, so both show the same.
+	 * @since 2.0.0
+	 */
+	public static final String PREFERENCES_NODE = "/us/bringardner/parley/files/chooser";
+	/** @since 2.0.0 (was ShowExtentions) */
+	public static final String SHOW_EXTENSIONS_PREFERENCE = "ShowExtensions";
+	/** @since 2.0.0 (was ShowHiddenFiles) */
+	public static final String SHOW_HIDDEN_PREFERENCE = "ShowHidden";
+
+	/** The choosers' preferences ({@link #PREFERENCES_NODE}) */
+	public static Preferences preferences() {
+		return Preferences.userRoot().node(PREFERENCES_NODE);
+	}
 
 	private class FileSourceDropTargetListener extends DropTargetAdapter {
 
@@ -815,9 +828,9 @@ public class FileSourceChooserDialog extends JDialog implements DragGestureListe
 		//os.name=Mac OS X
 		isMac = System.getProperty("os.name").toLowerCase().startsWith("mac");
 		String[] factories = FileSourceFactory.getRegisterdFactories();
-		Preferences p = Preferences.userNodeForPackage(FileSourceChooserDialog.class);
-		showExtention = p.getBoolean(SHOW_EXTENTIONS_PREFERENCE, showExtention);
-		showHiddenFiles = p.getBoolean(SHOW_HIDDEN_FILES_PREFERENCE, showHiddenFiles);
+		Preferences p = preferences();
+		showExtention = p.getBoolean(SHOW_EXTENSIONS_PREFERENCE, showExtention);
+		showHiddenFiles = p.getBoolean(SHOW_HIDDEN_PREFERENCE, showHiddenFiles);
 
 		setTitle("Open");
 		setBounds(100, 100, 753, 442);
@@ -1247,8 +1260,8 @@ public class FileSourceChooserDialog extends JDialog implements DragGestureListe
 		if( b != showExtention) {
 			showExtention = b;
 			rescanCurrentDirectory();
-			Preferences p = Preferences.userNodeForPackage(FileSourceChooserDialog.class);
-			p.put(SHOW_EXTENTIONS_PREFERENCE, ""+showExtention);
+			Preferences p = preferences();
+			p.putBoolean(SHOW_EXTENSIONS_PREFERENCE, showExtention);
 			try {
 				p.flush();
 			} catch (BackingStoreException e) {
@@ -1264,8 +1277,8 @@ public class FileSourceChooserDialog extends JDialog implements DragGestureListe
 		if( b != showHiddenFiles) {
 			showHiddenFiles = b;
 			rescanCurrentDirectory();
-			Preferences p = Preferences.userNodeForPackage(FileSourceChooserDialog.class);
-			p.put(SHOW_HIDDEN_FILES_PREFERENCE, ""+showHiddenFiles);
+			Preferences p = preferences();
+			p.putBoolean(SHOW_HIDDEN_PREFERENCE, showHiddenFiles);
 			try {
 				p.flush();
 			} catch (BackingStoreException e) {
