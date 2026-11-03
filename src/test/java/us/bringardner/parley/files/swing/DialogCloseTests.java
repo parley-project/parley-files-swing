@@ -1,5 +1,6 @@
 package us.bringardner.parley.files.swing;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.awt.GraphicsEnvironment;
@@ -71,5 +72,33 @@ public class DialogCloseTests {
 			}
 		});
 		assertTrue(cancel[0], "closing is cancelling");
+	}
+
+	/** Show the chooser (open or save) and close it as its close button does. */
+	private static int closeTheChooser(boolean save) throws Exception {
+		int[] ret = new int[1];
+		SwingUtilities.invokeAndWait(() -> {
+			try {
+				FileSourceChooserDialog d = new FileSourceChooserDialog();
+				d.setCurrentDirectory(new MemoryFileSourceFactory().createFileSource("/"));
+				closeWhenShowing(FileSourceChooserDialog.class);
+				ret[0] = save ? d.showSaveDialog(null) : d.showOpenDialog(null);
+			} catch (java.io.IOException e) {
+				throw new java.io.UncheckedIOException(e);
+			}
+		});
+		return ret[0];
+	}
+
+	@Test
+	void closingTheOpenChooserCancels() throws Exception {
+		Assumptions.assumeFalse(GraphicsEnvironment.isHeadless(), "needs a display");
+		assertEquals(FileSourceChooserDialog.CANCEL_OPTION, closeTheChooser(false), "closing is cancelling");
+	}
+
+	@Test
+	void closingTheSaveChooserCancels() throws Exception {
+		Assumptions.assumeFalse(GraphicsEnvironment.isHeadless(), "needs a display");
+		assertEquals(FileSourceChooserDialog.CANCEL_OPTION, closeTheChooser(true), "closing is cancelling");
 	}
 }

@@ -1682,6 +1682,8 @@ public class FileSourceChooserDialog extends JDialog implements DragGestureListe
 				setDragEnabled(true);
 			} else {			
 				setModal(true);
+				// only Open (Save) accepts: Cancel, the close button or anything else that closes it cancels
+				canceled = true;
 			}
 			setVisible(true);
 			if( canceled) {
