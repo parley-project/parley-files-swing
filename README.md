@@ -1,8 +1,10 @@
 # parley-files-swing
 
 Swing user interface for [parley-files](https://github.com/parley-project/parley-files). It was
-part of parley-files until 1.0.0; it moved here so parley-files needs no UI toolkit. The JavaFX
-counterpart is [parley-files-fx](https://github.com/parley-project/parley-files-fx).
+part of parley-files until 1.0.0; it moved here so parley-files needs no UI toolkit.
+
+A JavaFX counterpart, parley-files-fx, was built beside it until November 2026. It is retired; the
+tag `javafx-final` in its repository is its last version.
 
 ## Why this library exists
 
@@ -14,12 +16,7 @@ form to connect, and a recent files menu that can reopen a remote file. This lib
 Swing.
 
 The logic every UI needs (which connection settings apply, listing and sorting, copying, what a
-recent files entry saves) stays in parley-files, without a UI. This library and
-[parley-files-fx](https://github.com/parley-project/parley-files-fx) only show it, so the Swing
-and JavaFX UIs behave the same and share one recent files list.
-
-**Use parley-files-swing** when your application's UI is Swing. That includes when it has to run on
-Java 11, or on platforms where JavaFX isn't available. For a JavaFX application, use parley-files-fx.
+recent files entry saves) stays in parley-files, without a UI. This library only shows it.
 
 ## What's inside
 
@@ -31,30 +28,10 @@ All classes are in the package `us.bringardner.parley.files.swing`:
   `FileSourceFactory.getConnectionSettings()`.
 - `FactoryPropertiesDialog`: choose a file system type and fill in its settings.
 - `RecentFileMenu`: a recent-files menu that can reopen remote files. Secrets are never saved; it
-  asks for them again through a `SecretPrompter`. Its entries are parley-files' `RecentFile`s, as
-  in parley-files-fx's `RecentFileMenu`, so the two menus share a list.
+  asks for them again through a `SecretPrompter`. Its entries are parley-files' `RecentFile`s.
 - `FileSourceTransferable`: drag and drop, and copy and paste, of `FileSource`s.
 - `ProgressMonitorProgress`: a Swing `ProgressMonitor` as a `FileSourceProgress`.
 - `BackupDialog`, `FileSourceExamineDialog`.
-
-## JavaFX alternatives
-
-What to use from [parley-files-fx](https://github.com/parley-project/parley-files-fx) in a JavaFX
-application instead.
-
-| parley-files-swing | In parley-files-fx |
-|---|---|
-| `FileSourceChooserDialog` | `FileSourceChooser` |
-| `ConnectionSettingsPanel` | `ConnectionSettingsForm` |
-| `FactoryPropertiesDialog` | `ConnectionDialog`, which also connects, in the background |
-| `RecentFileMenu` | `RecentFileMenu`, which shares its list with this one |
-| `ProgressMonitorProgress` | None yet; a `Task` that implements `FileSourceProgress` and calls `updateProgress` does the same |
-| `FileSourceTransferable` | None yet; JavaFX drag and drop uses `Dragboard` and `ClipboardContent` |
-| `FileSourceExamineDialog` (a file's details and text) | None yet |
-| `BackupDialog` | None yet |
-
-parley-files-fx's chooser is also built from parts other views can use (`FileTable`, `PathBar`,
-`FolderTree`). Here those are inside `FileSourceChooserDialog`, not separate classes.
 
 ## Changing the look
 

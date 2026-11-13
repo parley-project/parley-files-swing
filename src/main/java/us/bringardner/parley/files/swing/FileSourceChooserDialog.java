@@ -287,8 +287,7 @@ public class FileSourceChooserDialog extends JDialog implements DragGestureListe
 	 */
 	public static final String CHOOSABLE_FILE_FILTER_CHANGED_PROPERTY = "ChoosableFileFilterChangedProperty";
 	/**
-	 * Where the choosers remember whether hidden files and extensions are shown: one node for this
-	 * chooser and parley-files-fx's FileSourceChooser, so both show the same.
+	 * Where the chooser remembers whether hidden files and extensions are shown.
 	 * @since 2.0.0
 	 */
 	public static final String PREFERENCES_NODE = "/us/bringardner/parley/files/chooser";

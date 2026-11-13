@@ -42,8 +42,7 @@ import us.bringardner.swing.menu.RecentItemsMenu;
 /**
  * A "Recent Files" menu, saved with java.util.prefs.Preferences. The menu itself is
  * swing-widgets' {@link RecentItemsMenu}, and each entry is a parley-files {@link RecentFile},
- * which holds everything that isn't Swing; parley-files-fx's RecentFileMenu is built the same
- * way, so the two menus behave the same and read each other's lists.
+ * which holds everything that isn't Swing.
  * <p>
  * Each entry keeps its factory's connection properties so it can be reopened,
  * but secret values (the factory decides which, see
