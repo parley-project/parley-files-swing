@@ -18,11 +18,11 @@
 
 - The file chooser shows folders and files with their own icons in the theme's colors (swing-widgets'
   `FolderIcon` and `FileIcon`), as the viewers do. Both were the gradient look's tree marker, so
-  they looked the same. Needs swing-widgets 1.1.0.
+  they looked the same. Needs swing-widgets 2.0.0.
 - The dialogs (`FileSourceChooserDialog`, `FileSourceExamineDialog`, `BackupDialog`,
   `FactoryPropertiesDialog`) take on the application's gradient look when it uses swing-widgets'
   `GradientLook`, as parley-files-viewer and fsh-ide do; otherwise they look as before.
-  swing-widgets 1.1.0.
+  swing-widgets 2.0.0.
 
 ## parley-files-swing 1.0.0 (2026-10-16)
 
